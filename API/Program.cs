@@ -1,3 +1,4 @@
+using API.Helpers;
 using Core.Data;
 using Core.Interfaces;
 using Infrastructure.Data;
@@ -12,7 +13,10 @@ builder.Services.AddDbContext<StoreContext>(x => x.UseSqlite(builder.Configurati
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>)));
 builder.Services.AddSwaggerGen();
+builder.Services.AddAutoMapper(typeof(MappingProfiles));
+builder.WebHost.UseUrls("https://localhost:5001");
 
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
@@ -39,6 +43,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
