@@ -16,6 +16,13 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerDocumentation();
 builder.Services.AddApplicationServices();
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("CorsPolicy", policy =>
+    {
+        policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200");
+    });
+});
 
 builder.Services.AddAutoMapper(typeof(MappingProfiles));
 builder.WebHost.UseUrls("https://localhost:5001");
@@ -47,6 +54,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
+
+app.UseCors("CorsPolicy");
 
 app.UseHttpsRedirection();
 
