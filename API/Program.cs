@@ -2,8 +2,8 @@ using API.Extensions;
 using API.Helpers;
 using API.Middleware;
 using Core.Data;
-using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,8 +13,12 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<StoreContext>(x => x.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddSwaggerDocumentation();
+builder.Services.AddSingleton<IConnectionMultiplexer>(c =>
+            {
+                var configuration = ConfigurationOptions.Parse(builder.Configuration.GetConnectionString("Redis"), true);
+                return ConnectionMultiplexer.Connect(configuration);
+            });
 builder.Services.AddApplicationServices();
 builder.Services.AddCors(opt =>
 {
@@ -36,7 +40,7 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<StoreContext>();
         await context.Database.MigrateAsync();
-        await StoreContextSeed.SeedAsync(context, loggerFactory);
+        await Infrastructure.Data.StoreContextSeed.SeedAsync(context, loggerFactory);
     }
     catch (Exception ex)
     {
